@@ -1,4 +1,4 @@
-package com.school.sba.dto;
+package com.school.sba.requestdto;
 
 import com.school.sba.enums.UserRole;
 

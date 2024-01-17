@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.school.sba.dto.UserRequest;
+import com.school.sba.requestdto.UserRequest;
 import com.school.sba.service.UserService;
 
 @RestController
@@ -27,7 +27,7 @@ public class UserController {
 	public Object deleteUser(@PathVariable int userId) {
 		return userService.deleteUser(userId);
 	}
-	
+
 	@GetMapping(path = "/users/{userId}")
 	public Object findUserById(@PathVariable int userId) {
 		return userService.findUserById(userId);

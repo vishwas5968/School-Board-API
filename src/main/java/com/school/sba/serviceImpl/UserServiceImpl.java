@@ -4,13 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.school.sba.dto.UserRequest;
-import com.school.sba.dto.UserResponse;
 import com.school.sba.entity.User;
 import com.school.sba.enums.UserRole;
 import com.school.sba.exception.ConstraintViolationException;
 import com.school.sba.exception.UserNotFoundException;
 import com.school.sba.repository.UserRepo;
+import com.school.sba.requestdto.UserRequest;
+import com.school.sba.responsedto.UserResponse;
 import com.school.sba.service.UserService;
 
 @Service
@@ -18,8 +18,6 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	UserRepo userRepo;
-
-	int count;
 
 	public User mapToUser(UserRequest userRequest) {
 		return User.builder().username(userRequest.getUsername()).password(userRequest.getPassword())
@@ -37,10 +35,8 @@ public class UserServiceImpl implements UserService {
 	public Object register(UserRequest userRequest) {
 		User user = mapToUser(userRequest);
 		user.setDeleted(false);
-		if (userRequest.getUserRole() == UserRole.ADMIN) {
-			count += 1;
-		}
-		if (count == 1 || userRequest.getUserRole() != UserRole.ADMIN) {
+		boolean existsByUserRole = userRepo.existsByUserRole(UserRole.ADMIN);
+		if (existsByUserRole == false) {
 			try {
 				user = userRepo.save(user);
 			} catch (Exception e) {

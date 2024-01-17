@@ -1,4 +1,4 @@
-package com.school.sba.dto;
+package com.school.sba.responsedto;
 
 import com.school.sba.enums.UserRole;
 

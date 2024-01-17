@@ -17,6 +17,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.school.sba.exception.ConstraintViolationException;
+import com.school.sba.exception.UnauthorizedException;
 import com.school.sba.exception.UserNotFoundException;
 
 @RestControllerAdvice
@@ -51,6 +52,11 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler 
 	
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ResponseEntity<Object> handleConstraintException(ConstraintViolationException exception) {
+		return exceptionStructure(exception.getStatus(),exception.getMessage(),exception.getRootCause());
+	}
+	
+	@ExceptionHandler(UnauthorizedException.class)
+	public ResponseEntity<Object> handleUnauthorizedException(UnauthorizedException exception) {
 		return exceptionStructure(exception.getStatus(),exception.getMessage(),exception.getRootCause());
 	}
 }

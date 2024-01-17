@@ -1,6 +1,6 @@
 package com.school.sba.service;
 
-import com.school.sba.dto.UserRequest;
+import com.school.sba.requestdto.UserRequest;
 
 public interface UserService {
 

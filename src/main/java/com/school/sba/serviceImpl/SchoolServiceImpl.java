@@ -1,0 +1,72 @@
+package com.school.sba.serviceImpl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import com.school.sba.entity.School;
+import com.school.sba.entity.User;
+import com.school.sba.enums.UserRole;
+import com.school.sba.exception.ConstraintViolationException;
+import com.school.sba.exception.UnauthorizedException;
+import com.school.sba.exception.UserNotFoundException;
+import com.school.sba.repository.SchoolRepo;
+import com.school.sba.repository.UserRepo;
+import com.school.sba.requestdto.SchoolRequest;
+import com.school.sba.responsedto.SchoolResponse;
+import com.school.sba.service.SchoolService;
+import com.school.sba.util.ResponseStructure;
+
+@Service
+public class SchoolServiceImpl implements SchoolService {
+
+	@Autowired
+	SchoolRepo schoolRepo;
+
+	@Autowired
+	UserRepo userRepo;
+
+	@Autowired
+	ResponseStructure<SchoolResponse> responseStructure;
+
+	@Autowired
+	School school;
+
+	public School mapToSchool(SchoolRequest schoolRequest) {
+		return School.builder().schoolName(schoolRequest.getSchoolName()).emailId(schoolRequest.getEmailId())
+				.contactNo(schoolRequest.getContactNo()).address(schoolRequest.getAddress()).build();
+	}
+
+	public SchoolResponse mapToSchoolResponse(School school) {
+		return SchoolResponse.builder().shoolName(school.getSchoolName()).emailId(school.getEmailId())
+				.contactNo(school.getContactNo()).address(school.getAddress()).build();
+	}
+
+	@Override
+	public ResponseEntity<ResponseStructure<SchoolResponse>> registerSchool(int userid, SchoolRequest schoolRequest) {
+		boolean existsById = schoolRepo.existsById(1);
+		if (existsById==false) {
+			User user = new User();
+			try {
+				user = userRepo.findById(userid).get();
+			} catch (Exception e) {
+				throw new UserNotFoundException("User with given ID is not registered in the database",
+						HttpStatus.NOT_FOUND, "No such user in database");
+			}
+			if (user.getUserRole() == UserRole.ADMIN) {
+				School school = schoolRepo.save(mapToSchool(schoolRequest));
+				responseStructure.setStatus(HttpStatus.CREATED.value());
+				responseStructure.setData(mapToSchoolResponse(school));
+				responseStructure.setMessage("School data has been registered successfully");
+			} else {
+				throw new UnauthorizedException("User with given Id is not authorized to add school",
+						HttpStatus.UNAUTHORIZED, "Only Admin has access");
+			}
+		} else {
+			throw new ConstraintViolationException("1 School is already present ", HttpStatus.FORBIDDEN, "More than one school cannot be created");
+		}
+		return new ResponseEntity<ResponseStructure<SchoolResponse>>(responseStructure, HttpStatus.CREATED);
+	}
+
+}
