@@ -8,4 +8,6 @@ public interface UserService {
 
 	Object deleteUser(int userId);
 
+	Object findUserById(int userId);
+
 }

@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.school.sba.dto.UserRequest;
+import com.school.sba.dto.UserResponse;
 import com.school.sba.entity.User;
 import com.school.sba.enums.UserRole;
 import com.school.sba.exception.ConstraintViolationException;
@@ -20,9 +21,22 @@ public class UserServiceImpl implements UserService {
 
 	int count;
 
+	public User mapToUser(UserRequest userRequest) {
+		return User.builder().username(userRequest.getUsername()).password(userRequest.getPassword())
+				.firstName(userRequest.getFirstName()).lastName(userRequest.getLastName())
+				.contactNo(userRequest.getContactNo()).email(userRequest.getEmail()).userRole(userRequest.getUserRole())
+				.build();
+	}
+
+	public UserResponse mapToUserResponse(User user) {
+		return UserResponse.builder().username(user.getUsername()).firstName(user.getFirstName())
+				.lastName(user.getLastName()).email(user.getEmail()).userRole(user.getUserRole()).build();
+	}
+
 	@Override
 	public Object register(UserRequest userRequest) {
 		User user = mapToUser(userRequest);
+		user.setDeleted(false);
 		if (userRequest.getUserRole() == UserRole.ADMIN) {
 			count += 1;
 		}
@@ -41,24 +55,20 @@ public class UserServiceImpl implements UserService {
 		return "User Saved Successfully";
 	}
 
-	public User mapToUser(UserRequest userRequest) {
-		return User.builder().username(userRequest.getUsername()).password(userRequest.getPassword())
-				.firstName(userRequest.getFirstName()).lastName(userRequest.getLastName())
-				.contactNo(userRequest.getContactNo()).email(userRequest.getEmail()).userRole(userRequest.getUserRole())
-				.build();
+	@Override
+	public Object deleteUser(int userId) {
+		User user = userRepo.findById(userId).orElseThrow(() ->  new UserNotFoundException("User with given ID is not registered in the database",
+				HttpStatus.NOT_FOUND, "No such user in database"));
+		user.setDeleted(true);
+		userRepo.delete(user);
+		return "User Deleted Successfully";
 	}
 
 	@Override
-	public Object deleteUser(int userId) {
-		User user = new User();
-		try {
-			user = userRepo.findById(userId).get();
-		} catch (Exception e) {
-			throw new UserNotFoundException("User with given ID is not registered in the database",
-					HttpStatus.NOT_FOUND, "No such user in database");
-		}
-		userRepo.delete(user);
-		return "User Deleted Successfully";
+	public UserResponse findUserById(int userId) {
+		User user = userRepo.findById(userId).orElseThrow(() ->  new UserNotFoundException("User with given ID is not registered in the database",
+				HttpStatus.NOT_FOUND, "No such user in database"));
+		return mapToUserResponse(user);
 	}
 
 }
