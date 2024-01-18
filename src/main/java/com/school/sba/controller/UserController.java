@@ -16,7 +16,7 @@ import com.school.sba.service.UserService;
 public class UserController {
 
 	@Autowired
-	UserService userService;
+	private	UserService userService;
 
 	@PostMapping(path = "/users/register")
 	public Object registerUser(@RequestBody @Validated UserRequest userRequest) {

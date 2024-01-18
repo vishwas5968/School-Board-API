@@ -13,10 +13,10 @@ import com.school.sba.service.SchoolService;
 public class SchoolController {
 	
 	@Autowired
-	SchoolService schoolService;
+    private	SchoolService schoolService;
 
 	@PostMapping(path = "/users/{userId}/schools")
-	public Object registerSchool(@PathVariable int userid,@RequestBody SchoolRequest schoolRequest) {
-		return schoolService.registerSchool(userid,schoolRequest);
+	public Object registerSchool(@PathVariable int userId,@RequestBody SchoolRequest schoolRequest) {
+		return schoolService.registerSchool(userId,schoolRequest);
 	}
 }

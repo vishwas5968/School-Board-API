@@ -22,16 +22,13 @@ import com.school.sba.util.ResponseStructure;
 public class SchoolServiceImpl implements SchoolService {
 
 	@Autowired
-	SchoolRepo schoolRepo;
+	private SchoolRepo schoolRepo;
 
 	@Autowired
-	UserRepo userRepo;
+	private UserRepo userRepo;
 
 	@Autowired
 	ResponseStructure<SchoolResponse> responseStructure;
-
-	@Autowired
-	School school;
 
 	public School mapToSchool(SchoolRequest schoolRequest) {
 		return School.builder().schoolName(schoolRequest.getSchoolName()).emailId(schoolRequest.getEmailId())
@@ -45,26 +42,28 @@ public class SchoolServiceImpl implements SchoolService {
 
 	@Override
 	public ResponseEntity<ResponseStructure<SchoolResponse>> registerSchool(int userid, SchoolRequest schoolRequest) {
-		boolean existsById = schoolRepo.existsById(1);
-		if (existsById==false) {
-			User user = new User();
-			try {
-				user = userRepo.findById(userid).get();
-			} catch (Exception e) {
-				throw new UserNotFoundException("User with given ID is not registered in the database",
-						HttpStatus.NOT_FOUND, "No such user in database");
-			}
-			if (user.getUserRole() == UserRole.ADMIN) {
-				School school = schoolRepo.save(mapToSchool(schoolRequest));
+		User user = new User();
+		try {
+			user = userRepo.findById(userid).get();
+		} catch (Exception e) {
+			throw new UserNotFoundException("User with given ID is not registered in the database",
+					HttpStatus.NOT_FOUND, "No such user in database");
+		}
+		if (user.getUserRole().equals(UserRole.ADMIN)) {
+			if (user.getSchool() == null) {
+				School school = schoolRepo.save(mapToSchool(schoolRequest)); 
+				user.setSchool(school);
+				userRepo.save(user);
 				responseStructure.setStatus(HttpStatus.CREATED.value());
 				responseStructure.setData(mapToSchoolResponse(school));
 				responseStructure.setMessage("School data has been registered successfully");
 			} else {
-				throw new UnauthorizedException("User with given Id is not authorized to add school",
-						HttpStatus.UNAUTHORIZED, "Only Admin has access");
+				throw new ConstraintViolationException("1 School is already present ", HttpStatus.FORBIDDEN,
+						"More than one school cannot be created");
 			}
 		} else {
-			throw new ConstraintViolationException("1 School is already present ", HttpStatus.FORBIDDEN, "More than one school cannot be created");
+			throw new UnauthorizedException("User with given Id is not authorized to add school",
+					HttpStatus.UNAUTHORIZED, "Only Admin has access");
 		}
 		return new ResponseEntity<ResponseStructure<SchoolResponse>>(responseStructure, HttpStatus.CREATED);
 	}

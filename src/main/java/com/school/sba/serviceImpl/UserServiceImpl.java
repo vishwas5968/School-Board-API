@@ -17,7 +17,7 @@ import com.school.sba.service.UserService;
 public class UserServiceImpl implements UserService {
 
 	@Autowired
-	UserRepo userRepo;
+	private	UserRepo userRepo;
 
 	public User mapToUser(UserRequest userRequest) {
 		return User.builder().username(userRequest.getUsername()).password(userRequest.getPassword())
@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
 		User user = mapToUser(userRequest);
 		user.setDeleted(false);
 		boolean existsByUserRole = userRepo.existsByUserRole(UserRole.ADMIN);
-		if (existsByUserRole == false) {
+		if (existsByUserRole == false || user.getUserRole()!=UserRole.ADMIN) {
 			try {
 				user = userRepo.save(user);
 			} catch (Exception e) {
