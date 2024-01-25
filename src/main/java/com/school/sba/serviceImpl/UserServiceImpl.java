@@ -2,6 +2,7 @@ package com.school.sba.serviceImpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.school.sba.entity.User;
@@ -17,13 +18,16 @@ import com.school.sba.service.UserService;
 public class UserServiceImpl implements UserService {
 
 	@Autowired
-	private	UserRepo userRepo;
+	PasswordEncoder passwordEncoder;
+
+	@Autowired
+	private UserRepo userRepo;
 
 	public User mapToUser(UserRequest userRequest) {
-		return User.builder().username(userRequest.getUsername()).password(userRequest.getPassword())
-				.firstName(userRequest.getFirstName()).lastName(userRequest.getLastName())
-				.contactNo(userRequest.getContactNo()).email(userRequest.getEmail()).userRole(userRequest.getUserRole())
-				.build();
+		return User.builder().username(userRequest.getUsername())
+				.password(passwordEncoder.encode(userRequest.getPassword())).firstName(userRequest.getFirstName())
+				.lastName(userRequest.getLastName()).contactNo(userRequest.getContactNo()).email(userRequest.getEmail())
+				.userRole(userRequest.getUserRole()).build();
 	}
 
 	public UserResponse mapToUserResponse(User user) {
@@ -32,11 +36,48 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public Object register(UserRequest userRequest) {
+	public Object registerUser(UserRequest userRequest) {
+		User user2 = userRepo.findByUserRole(UserRole.ADMIN).get();
 		User user = mapToUser(userRequest);
 		user.setDeleted(false);
-		boolean existsByUserRole = userRepo.existsByUserRole(UserRole.ADMIN);
-		if (existsByUserRole == false || user.getUserRole()!=UserRole.ADMIN) {
+		user.setSchool(user2.getSchool());
+		if (user.getUserRole() != UserRole.ADMIN) {
+			try {
+				user = userRepo.save(user);
+			} catch (Exception e) {
+				throw new ConstraintViolationException("Duplicate Entry made", HttpStatus.IM_USED,
+						"No duplicate entries are allowed");
+			}
+		} else {
+			throw new UserNotFoundException("User with given ID cannot be registered as admin in the database",
+					HttpStatus.NOT_FOUND, "Admin is already present in database");
+		}
+		return "User Saved Successfully";
+	}
+
+	@Override
+	public Object deleteUser(int userId) {
+		User user = userRepo.findById(userId)
+				.orElseThrow(() -> new UserNotFoundException("User with given ID is not registered in the database",
+						HttpStatus.NOT_FOUND, "No such user in database"));
+		user.setDeleted(true);
+		userRepo.delete(user);
+		return "User Deleted Successfully";
+	}
+
+	@Override
+	public UserResponse findUserById(int userId) {
+		User user = userRepo.findById(userId)
+				.orElseThrow(() -> new UserNotFoundException("User with given ID is not registered in the database",
+						HttpStatus.NOT_FOUND, "No such user in database"));
+		return mapToUserResponse(user);
+	}
+
+	@Override
+	public Object registerAdmin(UserRequest userRequest) {
+		User user = mapToUser(userRequest);
+		user.setDeleted(false);
+		if (!(userRepo.existsByUserRole(UserRole.ADMIN)) && user.getUserRole() == UserRole.ADMIN) {
 			try {
 				user = userRepo.save(user);
 			} catch (Exception e) {
@@ -47,24 +88,6 @@ public class UserServiceImpl implements UserService {
 			throw new ConstraintViolationException("There is already an admin", HttpStatus.IM_USED,
 					"More than 1 admin is not allowed");
 		}
-
 		return "User Saved Successfully";
 	}
-
-	@Override
-	public Object deleteUser(int userId) {
-		User user = userRepo.findById(userId).orElseThrow(() ->  new UserNotFoundException("User with given ID is not registered in the database",
-				HttpStatus.NOT_FOUND, "No such user in database"));
-		user.setDeleted(true);
-		userRepo.delete(user);
-		return "User Deleted Successfully";
-	}
-
-	@Override
-	public UserResponse findUserById(int userId) {
-		User user = userRepo.findById(userId).orElseThrow(() ->  new UserNotFoundException("User with given ID is not registered in the database",
-				HttpStatus.NOT_FOUND, "No such user in database"));
-		return mapToUserResponse(user);
-	}
-
 }

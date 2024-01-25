@@ -12,4 +12,6 @@ public interface AcademicProgramService {
 
 	ResponseEntity<ResponseStructure<AcademicProgramResponse>> fetchAllAcademicProgram(int schoolId);
 
+	ResponseEntity<ResponseStructure<AcademicProgramResponse>> addUserToAcademicProgram(int programId, int userId);
+
 }

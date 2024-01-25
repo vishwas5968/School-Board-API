@@ -1,8 +1,5 @@
 package com.school.sba.entity;
 
-import java.time.Duration;
-import java.time.LocalTime;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,18 +16,11 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Schedule {
+public class Subject {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int scheduleId;
-	private LocalTime opensAt;
-	private LocalTime closesAt;
-	private int classHoursPerDay;
-	private Duration classHourInMinutes;
-	private LocalTime breakTime;
-	private Duration breakLengthInMinutes;
-	private LocalTime lunchTime;
-	private Duration lunchLengthInMinutes;
+	private int subjectId;
+	private String subjectName;
 
 }

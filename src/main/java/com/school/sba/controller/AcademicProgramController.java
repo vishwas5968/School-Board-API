@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,4 +29,10 @@ public class AcademicProgramController {
 	public ResponseEntity<ResponseStructure<AcademicProgramResponse>> fetchAllAcademicProgram(@PathVariable int schoolId) {
 		return programService.fetchAllAcademicProgram(schoolId); 
 	}
+	
+	@PutMapping(path = "/academic-programs/{programId}/users/{userId}")
+	public ResponseEntity<ResponseStructure<AcademicProgramResponse>> addUserToAcademicProgram(@PathVariable int programId,@PathVariable int userId) {
+		return programService.addUserToAcademicProgram(programId,userId);
+	}
 }
+	

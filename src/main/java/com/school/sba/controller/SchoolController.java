@@ -1,7 +1,7 @@
 package com.school.sba.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,8 +15,9 @@ public class SchoolController {
 	@Autowired
     private	SchoolService schoolService;
 
-	@PostMapping(path = "/users/{userId}/schools")
-	public Object registerSchool(@PathVariable int userId,@RequestBody SchoolRequest schoolRequest) {
-		return schoolService.registerSchool(userId,schoolRequest);
+	@PreAuthorize(value = "hasAuthority('ADMIN')")
+	@PostMapping(path = "/schools")
+	public Object registerSchool(@RequestBody SchoolRequest schoolRequest) {
+		return schoolService.registerSchool(schoolRequest);
 	}
 }

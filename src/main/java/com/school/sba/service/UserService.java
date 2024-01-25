@@ -4,10 +4,12 @@ import com.school.sba.requestdto.UserRequest;
 
 public interface UserService {
 
-	Object register(UserRequest userRequest);
+	Object registerAdmin(UserRequest userRequest);
 
 	Object deleteUser(int userId);
 
 	Object findUserById(int userId);
+
+	Object registerUser(UserRequest userRequest);
 
 }

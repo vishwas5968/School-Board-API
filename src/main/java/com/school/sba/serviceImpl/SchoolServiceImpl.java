@@ -3,6 +3,7 @@ package com.school.sba.serviceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.school.sba.entity.School;
@@ -41,17 +42,15 @@ public class SchoolServiceImpl implements SchoolService {
 	}
 
 	@Override
-	public ResponseEntity<ResponseStructure<SchoolResponse>> registerSchool(int userid, SchoolRequest schoolRequest) {
+	public ResponseEntity<ResponseStructure<SchoolResponse>> registerSchool(SchoolRequest schoolRequest) {
+		String name = SecurityContextHolder.getContext().getAuthentication().getName();
 		User user = new User();
-		try {
-			user = userRepo.findById(userid).get();
-		} catch (Exception e) {
-			throw new UserNotFoundException("User with given ID is not registered in the database",
-					HttpStatus.NOT_FOUND, "No such user in database");
-		}
+		user = userRepo.findByUsername(name)
+				.orElseThrow(() -> new UserNotFoundException("User with given ID is not registered in the database",
+						HttpStatus.NOT_FOUND, "No such user in database"));
 		if (user.getUserRole().equals(UserRole.ADMIN)) {
 			if (user.getSchool() == null) {
-				School school = schoolRepo.save(mapToSchool(schoolRequest)); 
+				School school = schoolRepo.save(mapToSchool(schoolRequest));
 				user.setSchool(school);
 				userRepo.save(user);
 				responseStructure.setStatus(HttpStatus.CREATED.value());
