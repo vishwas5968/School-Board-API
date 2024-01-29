@@ -100,7 +100,7 @@ public class ScheduleServiceImpl implements com.school.sba.service.ScheduleServi
 				.closesAt(schedule.getClosesAt()).classHoursPerDay(schedule.getClassHoursPerDay())
 				.classHourInMinutes(schedule.getClassHourInMinutes()).breakTime(schedule.getBreakTime())
 				.breakLengthInMinutes(schedule.getBreakLengthInMinutes())
-				.lunchLengthInMinutes(schedule.getBreakLengthInMinutes()).lunchTime(schedule.getLunchTime()).build();
+				.lunchLengthInMinutes(schedule.getLunchLengthInMinutes()).lunchTime(schedule.getLunchTime()).build();
 	}
 
 	private Schedule mapToSchedule(ScheduleRequest scheduleRequest) {
@@ -109,6 +109,7 @@ public class ScheduleServiceImpl implements com.school.sba.service.ScheduleServi
 				.classHourInMinutes(Duration.ofMinutes(scheduleRequest.getClassHourInMinutes()))
 				.breakTime(scheduleRequest.getBreakTime())
 				.breakLengthInMinutes(Duration.ofMinutes(scheduleRequest.getBreakLengthInMinutes()))
+				.lunchLengthInMinutes(Duration.ofMinutes(scheduleRequest.getLunchLengthInMinutes()))
 				.lunchTime(scheduleRequest.getLunchTime()).lunchTime(scheduleRequest.getLunchTime()).build();
 	}
 

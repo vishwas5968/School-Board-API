@@ -1,7 +1,6 @@
 package com.school.sba.entity;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import com.school.sba.enums.ClassStatus;
 
@@ -10,9 +9,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Getter
 @Setter
@@ -27,11 +32,11 @@ public class ClassHour {
 	private ClassStatus classStatus;
 
 	@ManyToOne
-	private List<Subject> subjects;
+	private Subject subjects;
 	
 	@ManyToOne
-	private List<User> users;
+	private User users;
 	
 	@ManyToOne
-	private List<AcademicProgram> programs;
+	private AcademicProgram academicProgram;
 }

@@ -18,6 +18,7 @@ import com.school.sba.repository.SchoolRepo;
 import com.school.sba.repository.UserRepo;
 import com.school.sba.requestdto.AcademicProgramRequest;
 import com.school.sba.responsedto.AcademicProgramResponse;
+import com.school.sba.responsedto.UserResponse;
 import com.school.sba.service.AcademicProgramService;
 import com.school.sba.util.ResponseStructure;
 
@@ -32,15 +33,22 @@ public class AcademicProgramServiceImpl implements AcademicProgramService {
 
 	@Autowired
 	UserRepo userRepo;
+	
+	@Autowired
+	UserServiceImpl userService;
 
 	@Autowired
 	ResponseStructure<AcademicProgramResponse> structure;
 
 	@Autowired
 	ResponseStructure<List<AcademicProgramResponse>> responseStructure;
+	
+	@Autowired
+	ResponseStructure<List<UserResponse>> userStructure;
 
 	@Override
-	public ResponseEntity<ResponseStructure<AcademicProgramResponse>> addUserToAcademicProgram(int programId, int userId) {
+	public ResponseEntity<ResponseStructure<AcademicProgramResponse>> addUserToAcademicProgram(int programId,
+			int userId) {
 		AcademicProgram academicProgram = programRepo.findById(programId)
 				.orElseThrow(() -> new UserNotFoundException(
 						"Academic Program with given ID is not registered in the database", HttpStatus.NOT_FOUND,
@@ -106,6 +114,29 @@ public class AcademicProgramServiceImpl implements AcademicProgramService {
 		return AcademicProgramResponse.builder().programId(academicProgram.getProgramId())
 				.programType(academicProgram.getProgramType()).programNameString(academicProgram.getProgramName())
 				.beginsAt(academicProgram.getBeginsAt()).endsAt(academicProgram.getEndsAt()).build();
+	}
+
+	@Override
+	public ResponseEntity<ResponseStructure<List<UserResponse>>> fetchUserBasedOnAcademicProgram(int programId,
+			UserRole userRole) {
+		AcademicProgram academicProgram = programRepo.findById(programId)
+				.orElseThrow(() -> new UserNotFoundException("AcademicProgram with given ID is not registered in the database",
+						HttpStatus.NOT_FOUND, "No such AcademicProgram in database"));
+		List<UserResponse> userResponses=new ArrayList<>();
+		academicProgram.getUsers().forEach((user) ->{
+			if (user.getUserRole().equals(userRole)) {
+				userResponses.add(userService.mapToUserResponse(user));
+			}
+			else {
+				throw new UserNotFoundException(
+						"No  such userRole is registered in the database", HttpStatus.NOT_FOUND,
+						"Only TEACHER or STUDENT userRoles are present in DB");
+			}
+		});
+		userStructure.setData(userResponses);
+		userStructure.setMessage("Successfully fetched");
+		userStructure.setStatus(HttpStatus.FOUND.value());
+		return new ResponseEntity<ResponseStructure<List<UserResponse>>>(userStructure,HttpStatus.FOUND);
 	}
 
 }
