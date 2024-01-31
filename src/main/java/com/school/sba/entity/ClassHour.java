@@ -35,7 +35,7 @@ public class ClassHour {
 	private Subject subjects;
 	
 	@ManyToOne
-	private User users;
+	private User user;
 	
 	@ManyToOne
 	private AcademicProgram academicProgram;

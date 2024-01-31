@@ -1,14 +1,18 @@
 package com.school.sba.serviceImpl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.school.sba.entity.ClassHour;
 import com.school.sba.entity.User;
 import com.school.sba.enums.UserRole;
 import com.school.sba.exception.ConstraintViolationException;
 import com.school.sba.exception.UserNotFoundException;
+import com.school.sba.repository.ClassHourRepo;
 import com.school.sba.repository.UserRepo;
 import com.school.sba.requestdto.UserRequest;
 import com.school.sba.responsedto.UserResponse;
@@ -22,6 +26,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private UserRepo userRepo;
+	
+	@Autowired
+	private ClassHourRepo classHourRepo;
 
 	public User mapToUser(UserRequest userRequest) {
 		return User.builder().username(userRequest.getUsername())
@@ -56,13 +63,33 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public Object deleteUser(int userId) {
+	public String deleteUser() {
+		List<User> user = userRepo.findByIsDeleted(true);
+		user.forEach((u) -> {
+			if (!(u.getUserRole().equals(UserRole.ADMIN))) {
+				u.setDeleted(true);
+				u.setAcademicPrograms(null);
+				List<ClassHour> hours = classHourRepo.findByUser(u);
+				hours.forEach((ch)->{
+					ch.setUser(null);
+					classHourRepo.save(ch);
+				});
+				userRepo.save(u);
+				userRepo.delete(u);
+			}
+		});
+		System.out.println(user);
+		return "User Deleted Successfully";
+	}
+	
+	@Override
+	public UserResponse softDeleteUserById(int userId) {
 		User user = userRepo.findById(userId)
 				.orElseThrow(() -> new UserNotFoundException("User with given ID is not registered in the database",
 						HttpStatus.NOT_FOUND, "No such user in database"));
-		user.setDeleted(true);
-		userRepo.delete(user);
-		return "User Deleted Successfully";
+		user.setDeleted(false);
+		userRepo.save(user);
+		return mapToUserResponse(user);
 	}
 
 	@Override

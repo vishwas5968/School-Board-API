@@ -112,5 +112,11 @@ public class ScheduleServiceImpl implements com.school.sba.service.ScheduleServi
 				.lunchLengthInMinutes(Duration.ofMinutes(scheduleRequest.getLunchLengthInMinutes()))
 				.lunchTime(scheduleRequest.getLunchTime()).lunchTime(scheduleRequest.getLunchTime()).build();
 	}
+	
+	@Override
+	public Object deleteSchedule(Schedule schedule) {
+		scheduleRepo.delete(schedule);
+		return "Schedule Deleted";
+	}
 
 }

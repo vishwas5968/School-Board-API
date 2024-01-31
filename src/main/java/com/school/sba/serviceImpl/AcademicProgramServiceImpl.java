@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 
 import com.school.sba.entity.AcademicProgram;
 import com.school.sba.entity.School;
+import com.school.sba.entity.User;
 import com.school.sba.enums.UserRole;
 import com.school.sba.exception.UnauthorizedException;
 import com.school.sba.exception.UserNotFoundException;
 import com.school.sba.repository.AcademicProgramRepo;
+import com.school.sba.repository.ClassHourRepo;
 import com.school.sba.repository.SchoolRepo;
 import com.school.sba.repository.UserRepo;
 import com.school.sba.requestdto.AcademicProgramRequest;
@@ -35,6 +37,9 @@ public class AcademicProgramServiceImpl implements AcademicProgramService {
 	UserRepo userRepo;
 	
 	@Autowired
+	ClassHourRepo classHourRepo;
+
+	@Autowired
 	UserServiceImpl userService;
 
 	@Autowired
@@ -42,7 +47,7 @@ public class AcademicProgramServiceImpl implements AcademicProgramService {
 
 	@Autowired
 	ResponseStructure<List<AcademicProgramResponse>> responseStructure;
-	
+
 	@Autowired
 	ResponseStructure<List<UserResponse>> userStructure;
 
@@ -119,24 +124,55 @@ public class AcademicProgramServiceImpl implements AcademicProgramService {
 	@Override
 	public ResponseEntity<ResponseStructure<List<UserResponse>>> fetchUserBasedOnAcademicProgram(int programId,
 			UserRole userRole) {
-		AcademicProgram academicProgram = programRepo.findById(programId)
-				.orElseThrow(() -> new UserNotFoundException("AcademicProgram with given ID is not registered in the database",
-						HttpStatus.NOT_FOUND, "No such AcademicProgram in database"));
-		List<UserResponse> userResponses=new ArrayList<>();
-		academicProgram.getUsers().forEach((user) ->{
-			if (user.getUserRole().equals(userRole)) {
-				userResponses.add(userService.mapToUserResponse(user));
-			}
-			else {
-				throw new UserNotFoundException(
-						"No  such userRole is registered in the database", HttpStatus.NOT_FOUND,
-						"Only TEACHER or STUDENT userRoles are present in DB");
-			}
+		AcademicProgram program = programRepo.findById(programId)
+				.orElseThrow(() -> new UserNotFoundException(
+						"AcademicProgram with given ID is not registered in the database", HttpStatus.NOT_FOUND,
+						"No such AcademicProgram in database"));
+		List<User> role = userRepo.findByUserRoleAndAcademicPrograms(userRole,program);
+		List<UserResponse> userResponses = new ArrayList<>();
+		role.forEach((user) -> {
+			userResponses.add(userService.mapToUserResponse(user));
 		});
 		userStructure.setData(userResponses);
 		userStructure.setMessage("Successfully fetched");
 		userStructure.setStatus(HttpStatus.FOUND.value());
-		return new ResponseEntity<ResponseStructure<List<UserResponse>>>(userStructure,HttpStatus.FOUND);
+		return new ResponseEntity<ResponseStructure<List<UserResponse>>>(userStructure, HttpStatus.FOUND);
 	}
+	
+	@Override
+	public String deleteAcademicProgram() {
+		List<AcademicProgram> programs = programRepo.findByIsDeleted(true);
+		programs.forEach((program) -> {
+			classHourRepo.deleteAll(program.getClassHours());
+			programRepo.delete(program);
+		});
+		System.out.println(programs);
+		return "Program Deleted";
+	}
+
+//	@Override
+//	public ResponseEntity<ResponseStructure<List<UserResponse>>> fetchUserBasedOnAcademicProgram(int programId,
+//			UserRole userRole) {
+//		AcademicProgram academicProgram = programRepo.findById(programId)
+//				.orElseThrow(() -> new UserNotFoundException("AcademicProgram with given ID is not registered in the database",
+//						HttpStatus.NOT_FOUND, "No such AcademicProgram in database"));
+//		System.out.println("Inside fetchUserBasedOnAcademicProgram method");
+//		List<UserResponse> userResponses=new ArrayList<>();
+//		academicProgram.getUsers().forEach((user) ->{
+//			System.out.println(user);
+//			if (user.getUserRole().equals(userRole)) {
+//				userResponses.add(userService.mapToUserResponse(user));
+//			}
+//			else {
+//				throw new UserNotFoundException(
+//						"No  such userRole is registered in the database", HttpStatus.NOT_FOUND,
+//						"Only TEACHER or STUDENT userRoles are present in DB");
+//			}
+//		});
+//		userStructure.setData(userResponses);
+//		userStructure.setMessage("Successfully fetched");
+//		userStructure.setStatus(HttpStatus.FOUND.value());
+//		return new ResponseEntity<ResponseStructure<List<UserResponse>>>(userStructure,HttpStatus.FOUND);
+//	}
 
 }

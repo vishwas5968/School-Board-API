@@ -20,4 +20,6 @@ public interface AcademicProgramService {
 
 	ResponseEntity<ResponseStructure<List<UserResponse>>> fetchUserBasedOnAcademicProgram(int programId, UserRole userRole);
 
+	String deleteAcademicProgram();
+
 }

@@ -138,7 +138,7 @@ public class ClassHourServiceImpl implements ClassHourService {
 				if (user.getUserRole().equals(UserRole.TEACHER)) {
 					classHour.setRoomNo(roomNo);
 					classHour.setSubjects(subject);
-					classHour.setUsers(user);
+					classHour.setUser(user);
 					classHourRepo.save(classHour);
 				} else {
 					throw new ConstraintViolationException("Invalid User Id", HttpStatus.BAD_REQUEST, "");
@@ -148,6 +148,13 @@ public class ClassHourServiceImpl implements ClassHourService {
 			}
 		});
 		return "ClassHour updated";
+	}
+	
+	@Override
+	public Object deleteClassHours(List<ClassHour> classHours) {
+//		 classHourRepo.findAll(classHours).orElseThrow();
+//		program.setDeleted(true);
+		return "Program Soft Deleted";
 	}
 
 }

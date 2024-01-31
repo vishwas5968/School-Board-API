@@ -2,7 +2,6 @@ package com.school.sba.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,11 +30,11 @@ public class UserController {
 		return userService.registerAdmin(userRequest);
 	}
 
-	@PreAuthorize(value = "hasAuthority('ADMIN')")
-	@DeleteMapping(path = "/users/{userId}")
-	public Object deleteUser(@PathVariable int userId) {
-		return userService.deleteUser(userId);
-	}
+//	@PreAuthorize(value = "hasAuthority('ADMIN')")
+//	@DeleteMapping(path = "/users/{userId}")
+//	public Object deleteUser(@PathVariable int userId) {
+//		return userService.deleteUser(userId);
+//	}
 
 	@PreAuthorize(value = "hasAuthority('ADMIN') OR hasAuthority('TEACHER')" )
 	@GetMapping(path = "/users/{userId}")

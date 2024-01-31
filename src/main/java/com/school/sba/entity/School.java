@@ -2,6 +2,9 @@ package com.school.sba.entity;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,11 +32,14 @@ public class School {
 	private long contactNo;
 	private String emailId;
 	private String address;
+	
+	@Value(value = "false")
+	private boolean isDeleted;
 
-	@OneToOne
+	@OneToOne(cascade = CascadeType.REMOVE)
 	private Schedule schedule;
 	
-	@OneToMany
+	@OneToMany(mappedBy = "school")
 	private List<AcademicProgram> academicPrograms;
 	
 }

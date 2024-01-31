@@ -10,4 +10,6 @@ public interface SchoolService {
 
 	ResponseEntity<ResponseStructure<SchoolResponse>> registerSchool(SchoolRequest schoolRequest);
 
+	String deleteSchool();
+
 }

@@ -43,4 +43,5 @@ public class SubjectController {
 	public ResponseEntity<ResponseStructure<User>> mapSubjectToTeacher(@PathVariable int subjectId,@PathVariable int userId) {
 		return subjectService.mapSubjectToTeacher(subjectId,userId);
 	}
+	
 }
