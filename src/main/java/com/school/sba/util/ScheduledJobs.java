@@ -1,7 +1,6 @@
 package com.school.sba.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.school.sba.service.AcademicProgramService;
@@ -23,13 +22,19 @@ public class ScheduledJobs {
 //	public void test() {
 //		System.out.println("Scheduled job");
 //	}
+//
+//	@Scheduled(fixedDelay = 10000L)	
+//	public void delete() {
+//		String msgString =userService.deleteUser();
+//		log.info(msgString);
+//		
+//		log.info(programService.deleteAcademicProgram());
+//	}
 
-	@Scheduled(fixedDelay = 10000L)	
-	public void delete() {
-		String msgString =userService.deleteUser();
-		log.info(msgString);
-		
-		log.info(programService.deleteAcademicProgram());
-	}
-
+//	<minute> <hour> <day-of-month> <month> <day-of-week> <command>
+//	@Scheduled(cron = "* * * * MON")
+//	public void generateClasshourEveryMonday() {
+//		
+//	}
+	
 }

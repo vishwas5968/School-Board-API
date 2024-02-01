@@ -2,6 +2,7 @@ package com.school.sba.serviceImpl;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.school.sba.entity.AcademicProgram;
 import com.school.sba.entity.ClassHour;
 import com.school.sba.entity.Schedule;
 import com.school.sba.entity.School;
@@ -30,7 +32,7 @@ import com.school.sba.util.ResponseStructure;
 public class ClassHourServiceImpl implements ClassHourService {
 
 	@Autowired
-	private AcademicProgramRepo academicProgramRepository;
+	private AcademicProgramRepo academicProgramRepo;
 
 	@Autowired
 	private ClassHourRepo classHourRepo;
@@ -43,6 +45,9 @@ public class ClassHourServiceImpl implements ClassHourService {
 
 	@Autowired
 	ResponseStructure<String> structure;
+
+	@Autowired
+	ResponseStructure<List<ClassHour>> structure2;
 
 	private boolean isBreakTime(LocalDateTime beginsAt, LocalDateTime endsAt, Schedule schedule) {
 		LocalTime breakTimeStart = schedule.getBreakTime();
@@ -60,7 +65,7 @@ public class ClassHourServiceImpl implements ClassHourService {
 
 	@Override
 	public ResponseEntity<ResponseStructure<String>> registerClassHour(int programId) {
-		return academicProgramRepository.findById(programId).map(academicProgarm -> {
+		return academicProgramRepo.findById(programId).map(academicProgarm -> {
 			School school = academicProgarm.getSchool();
 			Schedule schedule = school.getSchedule();
 			if (schedule != null) {
@@ -68,24 +73,24 @@ public class ClassHourServiceImpl implements ClassHourService {
 				int classHourLength = (int) schedule.getClassHourInMinutes().toMinutes();
 
 				LocalDateTime currentTime = LocalDateTime.now().with(schedule.getOpensAt());
-
-				LocalDateTime lunchTimeStart = LocalDateTime.now().with(schedule.getLunchTime());
+				currentTime=currentTime.minusDays(LocalDateTime.now().getDayOfWeek().getValue());
+				LocalDateTime lunchTimeStart = currentTime.with(schedule.getLunchTime());
 				LocalDateTime lunchTimeEnd = lunchTimeStart.plusMinutes(schedule.getLunchLengthInMinutes().toMinutes());
-				LocalDateTime breakTimeStart = LocalDateTime.now().with(schedule.getBreakTime());
+				LocalDateTime breakTimeStart = currentTime.with(schedule.getBreakTime());
 				LocalDateTime breakTimeEnd = breakTimeStart.plusMinutes(schedule.getBreakLengthInMinutes().toMinutes());
 
 				for (int day = 1; day <= 6; day++) {
+					currentTime = currentTime.plusDays(1);
 					for (int hour = 1; hour <= classHourPerDay + 2; hour++) {
 						ClassHour classHour = new ClassHour();
-						LocalDateTime beginsAt = currentTime;
+						LocalDateTime beginsAt = currentTime.with(schedule.getOpensAt());
 						LocalDateTime endsAt = beginsAt.plusMinutes(classHourLength);
-
+						
 						if (!isLunchTime(beginsAt, endsAt, schedule)) {
 							if (!isBreakTime(beginsAt, endsAt, schedule)) {
 								classHour.setBeginsAt(beginsAt);
 								classHour.setEndsAt(endsAt);
 								classHour.setClassStatus(ClassStatus.NOT_SCHEDULED);
-
 								currentTime = endsAt;
 							} else {
 								classHour.setBeginsAt(breakTimeStart);
@@ -102,7 +107,7 @@ public class ClassHourServiceImpl implements ClassHourService {
 						classHour.setAcademicProgram(academicProgarm);
 						classHourRepo.save(classHour);
 					}
-					currentTime = currentTime.plusDays(1).with(schedule.getOpensAt());
+					System.out.println(currentTime);
 				}
 
 			} else
@@ -115,6 +120,39 @@ public class ClassHourServiceImpl implements ClassHourService {
 			structure.setStatus(HttpStatus.CREATED.value());
 			return new ResponseEntity<ResponseStructure<String>>(HttpStatus.CREATED);
 		}).orElseThrow(() -> new UserNotFoundException("Invalid Program Id", HttpStatus.BAD_REQUEST, ""));
+	}
+
+	@Override
+	public ResponseEntity<ResponseStructure<List<ClassHour>>> createClassHoursForNextweek(int programId) {
+		AcademicProgram academicProgram = academicProgramRepo.findById(programId).get();
+		List<ClassHour> classHours = academicProgram.getClassHours();
+		List<ClassHour> classHours2=new ArrayList<>();
+		classHours.forEach((hour) -> {
+			ClassHour newClassHour = createNewClassHour(hour);
+			classHours2.add(newClassHour);
+		});
+		classHours2.forEach((hour) -> {
+			LocalDateTime plusDays = hour.getBeginsAt().plusDays(7);
+			hour.setBeginsAt(plusDays);
+			classHourRepo.save(hour);			
+		});
+		structure.setData("generated");
+		structure.setMessage("New Classhour created for next week");
+		structure.setStatus(HttpStatus.CREATED.value());
+		return new ResponseEntity<ResponseStructure<List<ClassHour>>>(structure2, HttpStatus.CREATED);
+	}
+
+	public ClassHour createNewClassHour(ClassHour classHour) {
+		ClassHour hour = new ClassHour();
+		hour.setAcademicProgram(classHour.getAcademicProgram());
+		hour.setBeginsAt(classHour.getBeginsAt());
+		hour.setClassStatus(classHour.getClassStatus());
+		hour.setEndsAt(classHour.getEndsAt());
+		hour.setRoomNo(classHour.getRoomNo());
+		hour.setSubjects(classHour.getSubjects());
+		hour.setUser(classHour.getUser());
+		return hour;
+
 	}
 
 	@Override
@@ -149,7 +187,7 @@ public class ClassHourServiceImpl implements ClassHourService {
 		});
 		return "ClassHour updated";
 	}
-	
+
 	@Override
 	public Object deleteClassHours(List<ClassHour> classHours) {
 //		 classHourRepo.findAll(classHours).orElseThrow();

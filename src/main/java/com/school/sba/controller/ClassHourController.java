@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.school.sba.entity.ClassHour;
 import com.school.sba.requestdto.ClassHourUpdateRequest;
 import com.school.sba.service.ClassHourService;
 import com.school.sba.util.ResponseStructure;
@@ -30,4 +31,8 @@ public class ClassHourController {
 		return hourService.updateClassHour(updateRequests);
 	}
 
+	@PostMapping(path = "/class-hours/{programId}")
+	public ResponseEntity<ResponseStructure<List<ClassHour>>> createClassHoursForNextweek(@PathVariable int programId) {
+		return hourService.createClassHoursForNextweek(programId);
+	}
 }
