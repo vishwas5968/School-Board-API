@@ -33,6 +33,7 @@ public class AcademicProgram {
 	private LocalDate beginsAt;
 	private LocalDate endsAt;
 	private boolean isDeleted;
+	private boolean autoRepeat;
 
 	@ManyToOne
 	private School school;
